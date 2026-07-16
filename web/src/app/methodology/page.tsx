@@ -41,11 +41,13 @@ export default function Methodology() {
           which makes it the anchor suite: it keeps running and keeps publishing even if every
           LLM provider the other two suites depend on is down. It runs six checks: availability
           (the share of golden queries that returned a response without error); precision_at_5,
-          recall_at_10, and mrr, which score ranking quality against a name-substring relevance
-          set (a returned result counts as relevant if the expected name appears as a substring
-          of it, a known limitation covered below); negative_controls, built from names that
-          must never surface a PEP match, which fails on any false-positive hit or any errored
-          negative-control query; and p95_latency_ms.
+          recall_at_10, and mrr, which score ranking quality against an identity-based relevance
+          set (a returned result counts as relevant only if its stable Wikidata QID matches the
+          golden entry&apos;s expected identity, so two different people who happen to share a
+          name are never conflated; older golden entries with no recorded QID fall back to a
+          name-substring match); negative_controls, built from names that must never surface a
+          PEP match, which fails on any false-positive hit or any errored negative-control query;
+          and p95_latency_ms.
         </p>
 
         <h3 className="mt-6 font-medium">LexAura: RAG truthfulness</h3>
@@ -166,10 +168,10 @@ export default function Methodology() {
         </p>
         <ul className="mt-3 list-disc space-y-2 pl-5 text-neutral-600 dark:text-neutral-300">
           <li>
-            AfricaPEP&apos;s relevance scoring matches on name substring, not a stable entity
-            identifier. This is a known placeholder pending a QID-based rework of the golden set;
-            until then, precision, recall, and MRR should be read as directionally reliable, not
-            exact.
+            AfricaPEP&apos;s golden set matches on the API&apos;s stable Wikidata QID for every
+            positive entry, so precision, recall, and MRR reflect real identity rather than name
+            overlap. The suite still supports a name-substring fallback for any future entry added
+            without a recorded QID, but none of the current 93 positive entries use it.
           </li>
           <li>
             LexAura&apos;s golden set runs against the same production endpoint real users hit,
