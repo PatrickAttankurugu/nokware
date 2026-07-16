@@ -19,6 +19,7 @@ def build_suite(base_url: str, judge: Judge,
     def gather() -> CheckResult:
         client = httpx.Client()
         answers, latencies, errors = {}, [], 0
+        errored_ids = []
         for i, e in enumerate(entries):
             if i > 0:
                 time.sleep(RATE_LIMIT_SLEEP_S)
@@ -35,7 +36,11 @@ def build_suite(base_url: str, judge: Judge,
             except Exception as exc:
                 errors += 1
                 state.setdefault("errors", []).append({"id": e["id"], "error": str(exc)})
-        state.update(answers=answers, latencies=latencies)
+                errored_ids.append(e["id"])
+                # forced miss, not a dropped denominator: an errored query still counts
+                # against retrieval_hit_rate, citation_integrity, and faithfulness below
+                answers[e["id"]] = ({"answer": "", "sources": []}, e)
+        state.update(answers=answers, latencies=latencies, errored_ids=errored_ids)
         availability = 1.0 - (errors / len(entries) if entries else 0.0)
         return CheckResult(check_id="availability", suite="lexaura",
                            score_type="deterministic", value=round(availability, 4),
@@ -53,6 +58,7 @@ def build_suite(base_url: str, judge: Judge,
 
     def retrieval_hit_rate() -> CheckResult:
         hits, misses = 0, []
+        errored_ids = state.get("errored_ids", [])
         for qid, (payload, e) in state["answers"].items():
             context = _context(payload).lower()
             if e["source_quote"].lower() in context:
@@ -63,10 +69,11 @@ def build_suite(base_url: str, judge: Judge,
         score = hits / n
         return CheckResult(check_id="retrieval_hit_rate", suite="lexaura",
                            score_type="statistical", value=round(score, 4),
-                           passed=score >= 0.8, traces={"misses": misses})
+                           passed=score >= 0.8, traces={"misses": misses, "errored": errored_ids})
 
     def citation_integrity() -> CheckResult:
         ok, bad = 0, []
+        errored_ids = state.get("errored_ids", [])
         for qid, (payload, e) in state["answers"].items():
             cites = _citations(payload)
             if any(e["must_cite"].lower() in c.lower() for c in cites):
@@ -77,25 +84,38 @@ def build_suite(base_url: str, judge: Judge,
         score = ok / n
         return CheckResult(check_id="citation_integrity", suite="lexaura",
                            score_type="deterministic", value=round(score, 4),
-                           passed=score >= 0.8, traces={"bad": bad})
+                           passed=score >= 0.8, traces={"bad": bad, "errored": errored_ids})
 
     def faithfulness() -> CheckResult:
         scores, unsupported = [], []
+        errored_ids = set(state.get("errored_ids", []))
+        engines = {"gemini": 0, "fallback": 0}
         for qid, (payload, e) in state["answers"].items():
+            if qid in errored_ids:
+                # already known to be a forced miss (the POST raised); don't spend
+                # judge budget confirming it, and don't let it pollute the engine tally
+                scores.append(0.0)
+                unsupported.append({"id": qid, "reasons": ["query errored"], "engine": None})
+                continue
             verdict = judge.judge_faithfulness(payload.get("answer", ""), _context(payload))
             scores.append(verdict.score)
+            engines[verdict.engine] = engines.get(verdict.engine, 0) + 1
             if not verdict.supported:
                 unsupported.append({"id": qid, "reasons": verdict.reasons, "engine": verdict.engine})
         score = sum(scores) / len(scores) if scores else 0.0
         return CheckResult(check_id="faithfulness", suite="lexaura",
                            score_type="llm_judge", value=round(score, 4),
-                           passed=score >= 0.85, traces={"unsupported": unsupported})
+                           passed=score >= 0.85, traces={"unsupported": unsupported,
+                                                          "errored": sorted(errored_ids),
+                                                          "engines": engines})
 
     def latency() -> CheckResult:
         v = p95(state["latencies"])
+        passed = (v < 15000) and not state.get("errors") and bool(state["latencies"])
         return CheckResult(check_id="p95_latency_ms", suite="lexaura",
                            score_type="deterministic", value=round(v, 1),
-                           passed=v < 15000, traces={"n": len(state["latencies"])})
+                           passed=passed, traces={"n": len(state["latencies"]),
+                                                  "errored_queries": len(state.get("errors", []))})
 
     return Suite(name="lexaura", checks=[
         Check(id="availability", suite="lexaura", description="gather", fn=gather),
