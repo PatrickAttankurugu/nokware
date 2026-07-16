@@ -57,7 +57,7 @@ export type CheckHistoryPoint = {
   created_at: string;
 };
 
-export async function checkHistory(suite: string, days = 30): Promise<CheckHistoryPoint[]> {
+export async function checkHistory(suite: string, days = 90): Promise<CheckHistoryPoint[]> {
   const sql = getSql();
   return sql<CheckHistoryPoint[]>`
     SELECT check_id, value, created_at::text FROM results
@@ -118,10 +118,38 @@ export type RunRow = {
   judge_agreement: number | null;
 };
 
-export async function runs(limit = 30): Promise<RunRow[]> {
+export async function runs(limit = 90): Promise<RunRow[]> {
   const sql = getSql();
   return sql<RunRow[]>`
     SELECT id, started_at::text, finished_at::text, status, trigger, git_sha, golden_hash,
            judge_verified, judge_agreement
     FROM runs ORDER BY started_at DESC LIMIT ${limit}`;
+}
+
+export type RunResultRow = {
+  id: number;
+  suite: string;
+  check_id: string;
+  score_type: string;
+  value: number;
+  passed: boolean;
+  baseline: number | null;
+  traces: Record<string, unknown>;
+  created_at: string;
+};
+
+export async function runById(id: number): Promise<RunRow | null> {
+  const sql = getSql();
+  const rows = await sql<RunRow[]>`
+    SELECT id, started_at::text, finished_at::text, status, trigger, git_sha, golden_hash,
+           judge_verified, judge_agreement
+    FROM runs WHERE id = ${id}`;
+  return rows[0] ?? null;
+}
+
+export async function resultsForRun(runId: number): Promise<RunResultRow[]> {
+  const sql = getSql();
+  return sql<RunResultRow[]>`
+    SELECT id, suite, check_id, score_type, value, passed, baseline, traces, created_at::text
+    FROM results WHERE run_id = ${runId} ORDER BY suite, check_id`;
 }

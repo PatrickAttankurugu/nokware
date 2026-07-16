@@ -9,7 +9,7 @@ export const dynamic = "force-dynamic";
 const ACTIONS_URL = "https://github.com/PatrickAttankurugu/nokware/actions";
 
 export default async function Runs() {
-  const rows = await runs(30);
+  const rows = await runs(90);
 
   return (
     <main className="mx-auto max-w-5xl px-6 py-16">
@@ -44,7 +44,11 @@ export default async function Runs() {
             ) : (
               rows.map((r) => (
                 <tr key={r.id} className="border-b align-top last:border-0">
-                  <td className="py-2 pr-4 tabular-nums text-neutral-500">{r.started_at}</td>
+                  <td className="py-2 pr-4 tabular-nums text-neutral-500">
+                    <Link href={`/runs/${r.id}`} className="underline">
+                      {r.started_at}
+                    </Link>
+                  </td>
                   <td
                     className={`py-2 pr-4 ${
                       r.status === "completed" ? "text-emerald-600" : "text-red-600"

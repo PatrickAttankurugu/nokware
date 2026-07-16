@@ -42,7 +42,7 @@ export default async function SystemDetail({
   if (!meta) notFound();
 
   const [history, failing, latest, run] = await Promise.all([
-    checkHistory(slug, 30),
+    checkHistory(slug, 90),
     failingTraces(slug, 20),
     latestScores(),
     lastRun(),
@@ -84,7 +84,7 @@ export default async function SystemDetail({
       )}
 
       <section className="mt-10">
-        <h2 className="text-lg font-medium">Checks, last 30 days</h2>
+        <h2 className="text-lg font-medium">Checks, last 90 days</h2>
         {suiteLatest.length === 0 ? (
           <p className="mt-2 text-sm text-neutral-400">no results yet</p>
         ) : (
