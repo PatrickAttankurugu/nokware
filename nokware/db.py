@@ -71,7 +71,7 @@ class Ledger:
     def write_results(self, run_id: int, results: list[CheckResult]) -> None:
         with self._conn() as conn:
             for r in results:
-                baseline = self.baseline(r.suite, r.check_id)
+                baseline = self._baseline_on(conn, r.suite, r.check_id)
                 conn.execute(
                     """INSERT INTO results (run_id, suite, check_id, score_type, value, passed, baseline, traces)
                        VALUES (%s,%s,%s,%s,%s,%s,%s,%s)""",
@@ -88,16 +88,19 @@ class Ledger:
                 (status, judge_verified, judge_agreement, run_id),
             )
 
+    def _baseline_on(self, conn, suite: str, check_id: str, days: int = 7) -> float | None:
+        row = conn.execute(
+            """SELECT AVG(value) FROM results
+               WHERE suite = %s AND check_id = %s
+                 AND created_at >= now() - make_interval(days => %s)
+                 AND created_at < date_trunc('day', now())""",
+            (suite, check_id, days),
+        ).fetchone()
+        return float(row[0]) if row and row[0] is not None else None
+
     def baseline(self, suite: str, check_id: str, days: int = 7) -> float | None:
         with self._conn() as conn:
-            row = conn.execute(
-                """SELECT AVG(value) FROM results
-                   WHERE suite = %s AND check_id = %s
-                     AND created_at >= now() - make_interval(days => %s)
-                     AND created_at < date_trunc('day', now())""",
-                (suite, check_id, days),
-            ).fetchone()
-            return float(row[0]) if row and row[0] is not None else None
+            return self._baseline_on(conn, suite, check_id, days)
 
     def open_incident(self, run_id: int, suite: str, check_id: str,
                       severity: str, root_cause_hint: str) -> int:

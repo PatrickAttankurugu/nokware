@@ -1,4 +1,6 @@
 import os
+from uuid import uuid4
+
 import pytest
 from nokware.core import CheckResult
 from nokware.db import Ledger
@@ -15,15 +17,26 @@ def make_ledger() -> Ledger:
 
 
 def test_run_lifecycle_and_baseline():
+    suite = f"testsuite_{uuid4().hex[:8]}"
+    check_id = "precision_at_5"
     ledger = make_ledger()
     run_id = ledger.start_run(git_sha="abc123", golden_hash="g1", trigger="test")
     ledger.write_results(run_id, [CheckResult(
-        check_id="precision_at_5", suite="africapep", score_type="statistical",
+        check_id=check_id, suite=suite, score_type="statistical",
         value=0.9, passed=True, traces={"n": 100},
     )])
     ledger.finish_run(run_id, status="completed", judge_verified=True, judge_agreement=None)
-    base = ledger.baseline("africapep", "precision_at_5", days=7)
-    assert base is None or isinstance(base, float)  # today's run excluded from its own baseline
+
+    # Insert yesterday's result directly so we can prove today's row is excluded.
+    with ledger._conn() as conn:
+        conn.execute(
+            """INSERT INTO results (run_id, suite, check_id, score_type, value, passed, traces, created_at)
+               VALUES (%s,%s,%s,%s,%s,%s,%s, now() - interval '1 day')""",
+            (run_id, suite, check_id, "statistical", 0.5, True, "{}"),
+        )
+
+    base = ledger.baseline(suite, check_id, days=7)
+    assert base == 0.5  # yesterday's row counts; today's 0.9 must not pull the mean up
 
 
 def test_open_incident():
