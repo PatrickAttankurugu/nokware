@@ -1,0 +1,10 @@
+{"id": "gh-mahama-exact", "kind": "positive", "query": "John Mahama", "country": "GH", "expect_name": "John Mahama", "max_rank": 1}
+{"id": "gh-mahama-reordered", "kind": "positive", "query": "Mahama John", "country": "GH", "expect_name": "John Mahama", "max_rank": 1}
+{"id": "ng-tinubu-exact", "kind": "positive", "query": "Bola Ahmed Tinubu", "country": "NG", "expect_name": "Bola Ahmed Tinubu", "max_rank": 1}
+{"id": "ci-ouattara-nodiacritics", "kind": "positive", "query": "Alassane Ouattara", "country": "CI", "expect_name": "Alassane Ouattara", "max_rank": 1}
+{"id": "ke-ruto-exact", "kind": "positive", "query": "William Ruto", "country": "KE", "expect_name": "William Ruto", "max_rank": 1}
+{"id": "za-ramaphosa-exact", "kind": "positive", "query": "Cyril Ramaphosa", "country": "ZA", "expect_name": "Cyril Ramaphosa", "max_rank": 1}
+{"id": "sz-king-title", "kind": "positive", "query": "Mswati III", "country": "SZ", "expect_name": "Mswati III", "max_rank": 1}
+{"id": "neg-common-name-1", "kind": "negative", "query": "Kwabena Osei Freelance Designer", "country": "GH"}
+{"id": "neg-common-name-2", "kind": "negative", "query": "Amina Yusuf Bakery Kaduna", "country": "NG"}
+{"id": "neg-nonperson", "kind": "negative", "query": "Nokware Reliability Ledger", "country": "GH"}
