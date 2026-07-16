@@ -1,4 +1,5 @@
 name: nightly-evals
+# trigger registration nudge
 on:
   schedule:
     # 08:30 GMT. Gemini free-tier daily quotas reset at midnight Pacific
