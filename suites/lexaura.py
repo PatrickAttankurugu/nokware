@@ -27,7 +27,7 @@ def build_suite(base_url: str, judge: Judge,
             try:
                 resp = client.post(
                     base_url.rstrip("/") + ASK_PATH,
-                    json={"question": e["question"], "jurisdiction": e.get("jurisdiction", "all")},
+                    json={"question": e["question"], "jurisdiction": e.get("jurisdiction", "all"), "include_full_context": True},
                     timeout=60,
                 )
                 resp.raise_for_status()
@@ -48,10 +48,10 @@ def build_suite(base_url: str, judge: Judge,
 
     def _context(payload: dict) -> str:
         # LexAura's sources[].body is the regulatory body name (e.g. "Central Bank of Nigeria"),
-        # not chunk text; sources[].snippet is the retrieved passage (truncated to 150 chars).
-        # That snippet is the only field carrying actual retrieved document text, so it is what
-        # retrieval_hit_rate and faithfulness check against.
-        return " ".join(s.get("snippet", "") for s in payload.get("sources", []))
+        # not chunk text. When include_full_context is true, sources[].full_text carries the
+        # complete retrieved chunk; otherwise sources[].snippet (truncated to 150 chars) is used.
+        # retrieval_hit_rate and faithfulness check against the most complete context available.
+        return " ".join(s.get("full_text") or s.get("snippet", "") for s in payload.get("sources", []))
 
     def _citations(payload: dict) -> list[str]:
         return [s.get("title", "") for s in payload.get("sources", [])]
@@ -59,17 +59,22 @@ def build_suite(base_url: str, judge: Judge,
     def retrieval_hit_rate() -> CheckResult:
         hits, misses = 0, []
         errored_ids = state.get("errored_ids", [])
+        has_full_text = False
         for qid, (payload, e) in state["answers"].items():
             context = _context(payload).lower()
+            sources = payload.get("sources", [])
+            if any(s.get("full_text") for s in sources):
+                has_full_text = True
             if e["source_quote"].lower() in context:
                 hits += 1
             else:
                 misses.append({"id": qid, "expected_quote": e["source_quote"][:80]})
         n = len(state["answers"]) or 1
         score = hits / n
+        context_mode = "full_text" if has_full_text else "snippet"
         return CheckResult(check_id="retrieval_hit_rate", suite="lexaura",
                            score_type="statistical", value=round(score, 4),
-                           passed=score >= 0.8, traces={"misses": misses, "errored": errored_ids})
+                           passed=score >= 0.8, traces={"misses": misses, "errored": errored_ids, "context_mode": context_mode})
 
     def citation_integrity() -> CheckResult:
         ok, bad = 0, []

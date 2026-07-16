@@ -13,21 +13,25 @@ def no_sleep(monkeypatch):
     monkeypatch.setattr(time, "sleep", lambda *_args, **_kwargs: None)
 
 
-def fake_response(answer, snippets, titles, must_cite="s.4"):
+def fake_response(answer, snippets, titles, must_cite="s.4", include_full_text=False):
+    sources = []
+    for s, t in zip(snippets, titles):
+        source = {
+            "title": t,
+            "body": "Some Regulatory Body",
+            "country": "Ghana",
+            "year": 2020,
+            "snippet": s,
+            "relevance_score": 0.9,
+            "provenance": "official_document",
+        }
+        if include_full_text:
+            # Simulate full context: golden quote in full_text but not in snippet
+            source["full_text"] = "This is the full regulatory text. " + s + " This is additional context after the snippet."
+        sources.append(source)
     return {
         "answer": answer,
-        "sources": [
-            {
-                "title": t,
-                "body": "Some Regulatory Body",
-                "country": "Ghana",
-                "year": 2020,
-                "snippet": s,
-                "relevance_score": 0.9,
-                "provenance": "official_document",
-            }
-            for s, t in zip(snippets, titles)
-        ],
+        "sources": sources,
         "category": "KYC",
         "grounding": None,
     }
@@ -44,12 +48,14 @@ def test_lexaura_suite_scores(httpx_mock: HTTPXMock, tmp_path):
         "The registration fee is 500 cedis (s.4).",
         ["Applicants must pay a registration fee of 500 cedis."],
         ["Registration Directive s.4"],
+        include_full_text=True,
     ))
     judge = Judge(api_key=None, budget=JudgeBudget(limit=10))
     suite = build_suite("https://lex.example.com", judge, golden_path=str(golden))
     results = {r.check_id: r for r in suite.run()}
     assert results["availability"].value == 1.0
     assert results["retrieval_hit_rate"].value == 1.0
+    assert results["retrieval_hit_rate"].traces["context_mode"] == "full_text"
     assert results["citation_integrity"].value == 1.0
     assert results["faithfulness"].score_type == "llm_judge"
     assert results["faithfulness"].traces["engines"] == {"gemini": 0, "fallback": 1}
@@ -116,3 +122,25 @@ def test_lexaura_suite_fails_checks_under_full_outage(httpx_mock: HTTPXMock, tmp
     assert results["citation_integrity"].passed is False
     assert results["faithfulness"].passed is False
     assert results["availability"].passed is False
+
+
+def test_lexaura_suite_snippet_fallback(httpx_mock: HTTPXMock, tmp_path):
+    golden = tmp_path / "g.jsonl"
+    golden.write_text(
+        '{"id": "q1", "question": "What is the fee?", '
+        '"source_quote": "a registration fee of 500 cedis", "must_cite": "s.4", '
+        '"jurisdiction": "ghana"}\n'
+    )
+    httpx_mock.add_response(json=fake_response(
+        "The registration fee is 500 cedis (s.4).",
+        ["Applicants must pay a registration fee of 500 cedis."],
+        ["Registration Directive s.4"],
+        include_full_text=False,
+    ))
+    judge = Judge(api_key=None, budget=JudgeBudget(limit=10))
+    suite = build_suite("https://lex.example.com", judge, golden_path=str(golden))
+    results = {r.check_id: r for r in suite.run()}
+    assert results["availability"].value == 1.0
+    assert results["retrieval_hit_rate"].value == 1.0
+    assert results["retrieval_hit_rate"].traces["context_mode"] == "snippet"
+    assert results["citation_integrity"].value == 1.0
