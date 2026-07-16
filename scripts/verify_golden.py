@@ -4,6 +4,7 @@
 import json
 import os
 import sys
+import time
 
 import httpx
 
@@ -14,14 +15,23 @@ from suites.africapep import search_names
 base = os.environ["AFRICAPEP_BASE_URL"].rstrip("/")
 key = os.environ["AFRICAPEP_API_KEY"]
 failures = 0
-for line in open(sys.argv[1], encoding="utf8"):
+client = httpx.Client()
+for i, line in enumerate(open(sys.argv[1], encoding="utf8")):
+    if not line.strip():
+        continue
+    if i > 0:
+        time.sleep(0.3)  # pace requests politely against the live API
     e = json.loads(line)
-    names = search_names(httpx.Client(), base, key, e["query"], e.get("country"))
+    results = search_names(client, base, key, e["query"], e.get("country"))
     if e["kind"] == "positive":
-        hit = any(e["expect_name"].lower() in n.lower() for n in names[: e["max_rank"]])
+        window = results[: e["max_rank"]]
+        if e.get("expect_qid"):
+            hit = any(r.get("id") == e["expect_qid"] for r in window)
+        else:
+            hit = any(e["expect_name"].lower() in r["full_name"].lower() for r in window)
         status = "OK" if hit else "MISS"
     else:
-        status = "OK" if not names else f"UNEXPECTED {names[:2]}"
+        status = "OK" if not results else f"UNEXPECTED {[r['full_name'] for r in results[:2]]}"
     if not status.startswith("OK"):
         failures += 1
     print(f"{status:>10}  {e['id']}")

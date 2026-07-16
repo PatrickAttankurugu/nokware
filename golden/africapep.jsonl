@@ -1,10 +1,108 @@
-{"id": "gh-mahama-exact", "kind": "positive", "query": "John Mahama", "country": "GH", "expect_name": "John Mahama", "max_rank": 1}
-{"id": "gh-mahama-reordered", "kind": "positive", "query": "Mahama John", "country": "GH", "expect_name": "John Mahama", "max_rank": 1}
-{"id": "ng-tinubu-exact", "kind": "positive", "query": "Bola Ahmed Tinubu", "country": "NG", "expect_name": "Bola Ahmed Tinubu", "max_rank": 1}
-{"id": "ci-ouattara-nodiacritics", "kind": "positive", "query": "Alassane Ouattara", "country": "CI", "expect_name": "Alassane Ouattara", "max_rank": 1}
-{"id": "ke-ruto-exact", "kind": "positive", "query": "William Ruto", "country": "KE", "expect_name": "William Ruto", "max_rank": 1}
-{"id": "za-ramaphosa-exact", "kind": "positive", "query": "Cyril Ramaphosa", "country": "ZA", "expect_name": "Cyril Ramaphosa", "max_rank": 1}
-{"id": "sz-king-title", "kind": "positive", "query": "Mswati III", "country": "SZ", "expect_name": "Mswati III", "max_rank": 1}
+{"id": "gh-mahama-exact", "kind": "positive", "query": "John Mahama", "country": "GH", "expect_name": "John Mahama", "expect_qid": "wd:Q50678", "max_rank": 1}
+{"id": "gh-mahama-reordered", "kind": "positive", "query": "Mahama John", "country": "GH", "expect_name": "John Mahama", "expect_qid": "wd:Q50678", "max_rank": 1}
+{"id": "ng-tinubu-exact", "kind": "positive", "query": "Bola Ahmed Tinubu", "country": "NG", "expect_name": "Bola Ahmed Tinubu", "expect_qid": "wd:Q3510872", "max_rank": 1}
+{"id": "ci-ouattara-nodiacritics", "kind": "positive", "query": "Alassane Ouattara", "country": "CI", "expect_name": "Alassane Ouattara", "expect_qid": "wd:Q57413", "max_rank": 1}
+{"id": "ke-ruto-exact", "kind": "positive", "query": "William Ruto", "country": "KE", "expect_name": "William Ruto", "expect_qid": "wd:Q195725", "max_rank": 1}
+{"id": "za-ramaphosa-exact", "kind": "positive", "query": "Cyril Ramaphosa", "country": "ZA", "expect_name": "Cyril Ramaphosa", "expect_qid": "wd:Q1148669", "max_rank": 1}
+{"id": "sz-king-title", "kind": "positive", "query": "Mswati III", "country": "SZ", "expect_name": "Mswati III", "expect_qid": "wd:Q57340", "max_rank": 1}
+{"id": "et-abiy-exact", "kind": "positive", "query": "Abiy Ahmed", "country": "ET", "expect_name": "Abiy Ahmed", "expect_qid": "wd:Q50365049", "max_rank": 1}
+{"id": "et-abiy-reordered", "kind": "positive", "query": "Ahmed Abiy", "country": "ET", "expect_name": "Abiy Ahmed", "expect_qid": "wd:Q50365049", "max_rank": 1}
+{"id": "ug-museveni-exact", "kind": "positive", "query": "Yoweri Museveni", "country": "UG", "expect_name": "Yoweri Museveni", "expect_qid": "wd:Q57274", "max_rank": 1}
+{"id": "ug-museveni-reordered", "kind": "positive", "query": "Museveni Yoweri", "country": "UG", "expect_name": "Yoweri Museveni", "expect_qid": "wd:Q57274", "max_rank": 1}
+{"id": "tz-samia-exact", "kind": "positive", "query": "Samia Suluhu Hassan", "country": "TZ", "expect_name": "Samia Suluhu Hassan", "expect_qid": "wd:Q16193885", "max_rank": 1}
+{"id": "tz-samia-reordered", "kind": "positive", "query": "Hassan Samia Suluhu", "country": "TZ", "expect_name": "Samia Suluhu Hassan", "expect_qid": "wd:Q16193885", "max_rank": 1}
+{"id": "tz-samia-partial", "kind": "positive", "query": "Samia Hassan", "country": "TZ", "expect_name": "Samia Suluhu Hassan", "expect_qid": "wd:Q16193885", "max_rank": 1}
+{"id": "zm-hichilema-exact", "kind": "positive", "query": "Hakainde Hichilema", "country": "ZM", "expect_name": "Hakainde Hichilema", "expect_qid": "wd:Q717185", "max_rank": 1}
+{"id": "zm-hichilema-reordered", "kind": "positive", "query": "Hichilema Hakainde", "country": "ZM", "expect_name": "Hakainde Hichilema", "expect_qid": "wd:Q717185", "max_rank": 1}
+{"id": "zw-mnangagwa-exact", "kind": "positive", "query": "Emmerson Mnangagwa", "country": "ZW", "expect_name": "Emmerson Mnangagwa", "expect_qid": "wd:Q510523", "max_rank": 1}
+{"id": "zw-mnangagwa-reordered", "kind": "positive", "query": "Mnangagwa Emmerson", "country": "ZW", "expect_name": "Emmerson Mnangagwa", "expect_qid": "wd:Q510523", "max_rank": 1}
+{"id": "sn-faye-exact", "kind": "positive", "query": "Bassirou Diomaye Faye", "country": "SN", "expect_name": "Bassirou Diomaye Faye", "expect_qid": "wd:Q124382437", "max_rank": 1}
+{"id": "sn-faye-reordered", "kind": "positive", "query": "Faye Bassirou Diomaye", "country": "SN", "expect_name": "Bassirou Diomaye Faye", "expect_qid": "wd:Q124382437", "max_rank": 1}
+{"id": "sn-faye-partial", "kind": "positive", "query": "Bassirou Faye", "country": "SN", "expect_name": "Bassirou Diomaye Faye", "expect_qid": "wd:Q124382437", "max_rank": 1}
+{"id": "bj-talon-exact", "kind": "positive", "query": "Patrice Talon", "country": "BJ", "expect_name": "Patrice Talon", "expect_qid": "wd:Q16669148", "max_rank": 1}
+{"id": "bj-talon-reordered", "kind": "positive", "query": "Talon Patrice", "country": "BJ", "expect_name": "Patrice Talon", "expect_qid": "wd:Q16669148", "max_rank": 1}
+{"id": "cm-biya-exact", "kind": "positive", "query": "Paul Biya", "country": "CM", "expect_name": "Paul Biya", "expect_qid": "wd:Q57272", "max_rank": 1}
+{"id": "cm-biya-reordered", "kind": "positive", "query": "Biya Paul", "country": "CM", "expect_name": "Paul Biya", "expect_qid": "wd:Q57272", "max_rank": 1}
+{"id": "rw-kagame-exact", "kind": "positive", "query": "Paul Kagame", "country": "RW", "expect_name": "Paul Kagame", "expect_qid": "wd:Q1231345", "max_rank": 1}
+{"id": "rw-kagame-reordered", "kind": "positive", "query": "Kagame Paul", "country": "RW", "expect_name": "Paul Kagame", "expect_qid": "wd:Q1231345", "max_rank": 1}
+{"id": "mw-chakwera-exact", "kind": "positive", "query": "Lazarus Chakwera", "country": "MW", "expect_name": "Lazarus Chakwera", "expect_qid": "wd:Q16202782", "max_rank": 1}
+{"id": "mw-chakwera-reordered", "kind": "positive", "query": "Chakwera Lazarus", "country": "MW", "expect_name": "Lazarus Chakwera", "expect_qid": "wd:Q16202782", "max_rank": 1}
+{"id": "bw-boko-exact", "kind": "positive", "query": "Duma Boko", "country": "BW", "expect_name": "Duma Boko", "expect_qid": "wd:Q18618881", "max_rank": 1}
+{"id": "bw-boko-reordered", "kind": "positive", "query": "Boko Duma", "country": "BW", "expect_name": "Duma Boko", "expect_qid": "wd:Q18618881", "max_rank": 1}
+{"id": "na-nandindaitwah-exact", "kind": "positive", "query": "Netumbo Nandi-Ndaitwah", "country": "NA", "expect_name": "Netumbo Nandi-Ndaitwah", "expect_qid": "wd:Q527020", "max_rank": 1}
+{"id": "na-nandindaitwah-reordered", "kind": "positive", "query": "Nandi-Ndaitwah Netumbo", "country": "NA", "expect_name": "Netumbo Nandi-Ndaitwah", "expect_qid": "wd:Q527020", "max_rank": 1}
+{"id": "eg-sisi-nodiacritics", "kind": "positive", "query": "Abdel Fattah el-Sisi", "country": "EG", "expect_name": "Abdel Fattah El-Sisi", "expect_qid": "wd:Q307871", "max_rank": 1}
+{"id": "eg-sisi-reordered", "kind": "positive", "query": "el-Sisi Abdel Fattah", "country": "EG", "expect_name": "Abdel Fattah El-Sisi", "expect_qid": "wd:Q307871", "max_rank": 1}
+{"id": "eg-sisi-partial", "kind": "positive", "query": "Abdel el-Sisi", "country": "EG", "expect_name": "Abdel Fattah El-Sisi", "expect_qid": "wd:Q307871", "max_rank": 1}
+{"id": "dz-tebboune-exact", "kind": "positive", "query": "Abdelmadjid Tebboune", "country": "DZ", "expect_name": "Abdelmadjid Tebboune", "expect_qid": "wd:Q2821166", "max_rank": 1}
+{"id": "dz-tebboune-reordered", "kind": "positive", "query": "Tebboune Abdelmadjid", "country": "DZ", "expect_name": "Abdelmadjid Tebboune", "expect_qid": "wd:Q2821166", "max_rank": 1}
+{"id": "tn-saied-exact", "kind": "positive", "query": "Kais Saied", "country": "TN", "expect_name": "Kais Saied", "expect_qid": "wd:Q16120878", "max_rank": 1}
+{"id": "tn-saied-reordered", "kind": "positive", "query": "Saied Kais", "country": "TN", "expect_name": "Kais Saied", "expect_qid": "wd:Q16120878", "max_rank": 1}
+{"id": "mz-chapo-exact", "kind": "positive", "query": "Daniel Chapo", "country": "MZ", "expect_name": "Daniel Chapo", "expect_qid": "wd:Q97058466", "max_rank": 1}
+{"id": "mz-chapo-reordered", "kind": "positive", "query": "Chapo Daniel", "country": "MZ", "expect_name": "Daniel Chapo", "expect_qid": "wd:Q97058466", "max_rank": 1}
+{"id": "gm-barrow-exact", "kind": "positive", "query": "Adama Barrow", "country": "GM", "expect_name": "Adama Barrow", "expect_qid": "wd:Q27917049", "max_rank": 1}
+{"id": "gm-barrow-reordered", "kind": "positive", "query": "Barrow Adama", "country": "GM", "expect_name": "Adama Barrow", "expect_qid": "wd:Q27917049", "max_rank": 1}
+{"id": "lr-boakai-exact", "kind": "positive", "query": "Joseph Boakai", "country": "LR", "expect_name": "Joseph Boakai", "expect_qid": "wd:Q2630483", "max_rank": 1}
+{"id": "lr-boakai-reordered", "kind": "positive", "query": "Boakai Joseph", "country": "LR", "expect_name": "Joseph Boakai", "expect_qid": "wd:Q2630483", "max_rank": 1}
+{"id": "sl-bio-exact", "kind": "positive", "query": "Julius Maada Bio", "country": "SL", "expect_name": "Julius Maada Bio", "expect_qid": "wd:Q283829", "max_rank": 1}
+{"id": "sl-bio-reordered", "kind": "positive", "query": "Bio Julius Maada", "country": "SL", "expect_name": "Julius Maada Bio", "expect_qid": "wd:Q283829", "max_rank": 1}
+{"id": "sl-bio-partial", "kind": "positive", "query": "Julius Bio", "country": "SL", "expect_name": "Julius Maada Bio", "expect_qid": "wd:Q283829", "max_rank": 1}
+{"id": "mg-rajoelina-exact", "kind": "positive", "query": "Andry Rajoelina", "country": "MG", "expect_name": "Andry Rajoelina", "expect_qid": "wd:Q57363", "max_rank": 1}
+{"id": "mg-rajoelina-reordered", "kind": "positive", "query": "Rajoelina Andry", "country": "MG", "expect_name": "Andry Rajoelina", "expect_qid": "wd:Q57363", "max_rank": 1}
+{"id": "mr-ghazouani-exact", "kind": "positive", "query": "Mohamed Ould Ghazouani", "country": "MR", "expect_name": "Mohamed Ould Ghazouani", "expect_qid": "wd:Q12241106", "max_rank": 1}
+{"id": "mr-ghazouani-reordered", "kind": "positive", "query": "Ghazouani Mohamed Ould", "country": "MR", "expect_name": "Mohamed Ould Ghazouani", "expect_qid": "wd:Q12241106", "max_rank": 1}
+{"id": "mr-ghazouani-partial", "kind": "positive", "query": "Mohamed Ghazouani", "country": "MR", "expect_name": "Mohamed Ould Ghazouani", "expect_qid": "wd:Q12241106", "max_rank": 1}
+{"id": "dj-guelleh-exact", "kind": "positive", "query": "Ismail Omar Guelleh", "country": "DJ", "expect_name": "Ismail Omar Guelleh", "expect_qid": "wd:Q57390", "max_rank": 1}
+{"id": "dj-guelleh-reordered", "kind": "positive", "query": "Guelleh Ismail Omar", "country": "DJ", "expect_name": "Ismail Omar Guelleh", "expect_qid": "wd:Q57390", "max_rank": 1}
+{"id": "dj-guelleh-partial", "kind": "positive", "query": "Ismail Guelleh", "country": "DJ", "expect_name": "Ismail Omar Guelleh", "expect_qid": "wd:Q57390", "max_rank": 1}
+{"id": "er-afwerki-exact", "kind": "positive", "query": "Isaias Afwerki", "country": "ER", "expect_name": "Isaias Afwerki", "expect_qid": "wd:Q57348", "max_rank": 1}
+{"id": "er-afwerki-reordered", "kind": "positive", "query": "Afwerki Isaias", "country": "ER", "expect_name": "Isaias Afwerki", "expect_qid": "wd:Q57348", "max_rank": 1}
+{"id": "cd-tshisekedi-exact", "kind": "positive", "query": "Felix Tshisekedi", "country": "CD", "expect_name": "Felix Tshisekedi", "expect_qid": "wd:Q29032770", "max_rank": 1}
+{"id": "cd-tshisekedi-reordered", "kind": "positive", "query": "Tshisekedi Felix", "country": "CD", "expect_name": "Felix Tshisekedi", "expect_qid": "wd:Q29032770", "max_rank": 1}
+{"id": "ga-nguema-exact", "kind": "positive", "query": "Brice Oligui Nguema", "country": "GA", "expect_name": "Brice Oligui Nguema", "expect_qid": "wd:Q122067521", "max_rank": 1}
+{"id": "ga-nguema-reordered", "kind": "positive", "query": "Nguema Brice Oligui", "country": "GA", "expect_name": "Brice Oligui Nguema", "expect_qid": "wd:Q122067521", "max_rank": 1}
+{"id": "ga-nguema-partial", "kind": "positive", "query": "Brice Nguema", "country": "GA", "expect_name": "Brice Oligui Nguema", "expect_qid": "wd:Q122067521", "max_rank": 1}
+{"id": "gn-doumbouya-exact", "kind": "positive", "query": "Mamady Doumbouya", "country": "GN", "expect_name": "Mamady Doumbouya", "expect_qid": "wd:Q108418519", "max_rank": 1}
+{"id": "gn-doumbouya-reordered", "kind": "positive", "query": "Doumbouya Mamady", "country": "GN", "expect_name": "Mamady Doumbouya", "expect_qid": "wd:Q108418519", "max_rank": 1}
+{"id": "ml-goita-exact", "kind": "positive", "query": "Assimi Goita", "country": "ML", "expect_name": "Assimi Goita", "expect_qid": "wd:Q98497406", "max_rank": 1}
+{"id": "ml-goita-reordered", "kind": "positive", "query": "Goita Assimi", "country": "ML", "expect_name": "Assimi Goita", "expect_qid": "wd:Q98497406", "max_rank": 1}
+{"id": "bf-traore-exact", "kind": "positive", "query": "Ibrahim Traore", "country": "BF", "expect_name": "Ibrahim Traore", "expect_qid": "wd:Q114341246", "max_rank": 1}
+{"id": "bf-traore-reordered", "kind": "positive", "query": "Traore Ibrahim", "country": "BF", "expect_name": "Ibrahim Traore", "expect_qid": "wd:Q114341246", "max_rank": 1}
+{"id": "cv-neves-exact", "kind": "positive", "query": "Jose Maria Neves", "country": "CV", "expect_name": "Jose Maria Neves", "expect_qid": "wd:Q57649", "max_rank": 1}
+{"id": "cv-neves-reordered", "kind": "positive", "query": "Neves Jose Maria", "country": "CV", "expect_name": "Jose Maria Neves", "expect_qid": "wd:Q57649", "max_rank": 1}
+{"id": "cv-neves-partial", "kind": "positive", "query": "Jose Neves", "country": "CV", "expect_name": "Jose Maria Neves", "expect_qid": "wd:Q57649", "max_rank": 1}
+{"id": "gw-embalo-exact", "kind": "positive", "query": "Umaro Sissoco Embalo", "country": "GW", "expect_name": "Umaro Sissoco Embalo", "expect_qid": "wd:Q16855164", "max_rank": 1}
+{"id": "gw-embalo-reordered", "kind": "positive", "query": "Embalo Umaro Sissoco", "country": "GW", "expect_name": "Umaro Sissoco Embalo", "expect_qid": "wd:Q16855164", "max_rank": 1}
+{"id": "gw-embalo-partial", "kind": "positive", "query": "Umaro Embalo", "country": "GW", "expect_name": "Umaro Sissoco Embalo", "expect_qid": "wd:Q16855164", "max_rank": 1}
+{"id": "tg-gnassingbe-exact", "kind": "positive", "query": "Faure Gnassingbe", "country": "TG", "expect_name": "Faure Gnassingbe", "expect_qid": "wd:Q4414", "max_rank": 1}
+{"id": "tg-gnassingbe-reordered", "kind": "positive", "query": "Gnassingbe Faure", "country": "TG", "expect_name": "Faure Gnassingbe", "expect_qid": "wd:Q4414", "max_rank": 1}
+{"id": "ls-matekane-exact", "kind": "positive", "query": "Sam Matekane", "country": "LS", "expect_name": "Sam Matekane", "expect_qid": "wd:Q114588964", "max_rank": 1}
+{"id": "ls-matekane-reordered", "kind": "positive", "query": "Matekane Sam", "country": "LS", "expect_name": "Sam Matekane", "expect_qid": "wd:Q114588964", "max_rank": 1}
+{"id": "ao-lourenco-exact", "kind": "positive", "query": "Joao Lourenco", "country": "AO", "expect_name": "Joao Lourenco", "expect_qid": "wd:Q28650390", "max_rank": 1}
+{"id": "ao-lourenco-reordered", "kind": "positive", "query": "Lourenco Joao", "country": "AO", "expect_name": "Joao Lourenco", "expect_qid": "wd:Q28650390", "max_rank": 1}
+{"id": "ng-edun-minister", "kind": "positive", "query": "Wale Edun", "country": "NG", "expect_name": "Wale Edun", "expect_qid": "wd:Q121741848", "max_rank": 1}
+{"id": "ke-mudavadi-pm", "kind": "positive", "query": "Musalia Mudavadi", "country": "KE", "expect_name": "Musalia Mudavadi", "expect_qid": "wd:Q1954003", "max_rank": 1}
+{"id": "za-godongwana-minister", "kind": "positive", "query": "Enoch Godongwana", "country": "ZA", "expect_name": "Enoch Godongwana", "expect_qid": "wd:Q16746658", "max_rank": 1}
+{"id": "ug-alupo-vp", "kind": "positive", "query": "Jessica Alupo", "country": "UG", "expect_name": "Jessica Alupo", "expect_qid": "wd:Q6187078", "max_rank": 1}
+{"id": "tz-biteko-dpm", "kind": "positive", "query": "Doto Biteko", "country": "TZ", "expect_name": "Doto Biteko", "expect_qid": "wd:Q30090598", "max_rank": 1}
+{"id": "zm-nalumango-vp", "kind": "positive", "query": "Mutale Nalumango", "country": "ZM", "expect_name": "Mutale Nalumango", "expect_qid": "wd:Q106921003", "max_rank": 1}
+{"id": "ng-shettima-vp", "kind": "positive", "query": "Kashim Shettima", "country": "NG", "expect_name": "Kashim Shettima", "expect_qid": "wd:Q6374297", "max_rank": 1}
+{"id": "ke-gachagua-vp", "kind": "positive", "query": "Rigathi Gachagua", "country": "KE", "expect_name": "Rigathi Gachagua", "expect_qid": "wd:Q47494765", "max_rank": 1}
+{"id": "za-mashatile-vp", "kind": "positive", "query": "Paul Mashatile", "country": "ZA", "expect_name": "Paul Mashatile", "expect_qid": "wd:Q7152252", "max_rank": 1}
+{"id": "gh-forson-minister", "kind": "positive", "query": "Cassiel Ato Forson", "country": "GH", "expect_name": "Cassiel Ato Forson", "expect_qid": "wd:Q61694564", "max_rank": 1}
+{"id": "gh-oforiatta-minister", "kind": "positive", "query": "Ken Ofori-Atta", "country": "GH", "expect_name": "Ken Ofori-Atta", "expect_qid": "wd:Q20022251", "max_rank": 1}
 {"id": "neg-common-name-1", "kind": "negative", "query": "Kwabena Osei Freelance Designer", "country": "GH"}
 {"id": "neg-common-name-2", "kind": "negative", "query": "Amina Yusuf Bakery Kaduna", "country": "NG"}
 {"id": "neg-nonperson", "kind": "negative", "query": "Nokware Reliability Ledger", "country": "GH"}
+{"id": "neg-common-name-3", "kind": "negative", "query": "Kofi Mensah Software Engineer", "country": "GH"}
+{"id": "neg-common-name-4", "kind": "negative", "query": "Grace Nyambura Hairdresser", "country": "KE"}
+{"id": "neg-common-name-5", "kind": "negative", "query": "Thabo Nkosi Taxi Driver", "country": "ZA"}
+{"id": "neg-common-name-6", "kind": "negative", "query": "Chidinma Okafor Market Trader", "country": "NG"}
+{"id": "neg-common-name-7", "kind": "negative", "query": "Mariam Toure Tailor Bamako", "country": "ML"}
+{"id": "neg-common-name-8", "kind": "negative", "query": "Peter Banda Mechanic Lusaka", "country": "ZM"}
+{"id": "neg-common-name-9", "kind": "negative", "query": "Fatou Diallo Seamstress Dakar", "country": "SN"}
+{"id": "neg-common-name-10", "kind": "negative", "query": "Emmanuel Owusu Barber Kumasi", "country": "GH"}
+{"id": "neg-fictional-title", "kind": "negative", "query": "President of Wakanda"}
+{"id": "neg-generic-institution", "kind": "negative", "query": "Central Bank Compliance Officer", "country": "GH"}
+{"id": "neg-random-string", "kind": "negative", "query": "Zzqxv Plombat Nonexistent"}
+{"id": "neg-nonperson-2", "kind": "negative", "query": "AfricaPEP Reliability Test Suite"}

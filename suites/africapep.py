@@ -11,14 +11,19 @@ AUTH_HEADER = "X-API-Key"       # middleware exists but is currently disabled in
 
 
 def search_names(client: httpx.Client, base: str, key: str,
-                 query: str, country: str | None) -> list[str]:
+                 query: str, country: str | None) -> list[dict]:
+    """Returns ranked result items with both `id` (stable Wikidata QID, e.g.
+    "wd:Q50678") and `full_name`. Identity (`id`) is the authoritative match
+    key; `full_name` is kept for readability in traces and for golden
+    entries that predate the QID scheme."""
     params = {"q": query}
     if country:
         params["country"] = country
     resp = client.get(base.rstrip("/") + SEARCH_PATH, params=params,
                       headers={AUTH_HEADER: key}, timeout=15)
     resp.raise_for_status()
-    return [item["full_name"] for item in resp.json().get("results", [])]
+    return [{"id": item.get("id"), "full_name": item["full_name"]}
+            for item in resp.json().get("results", [])]
 
 
 def build_suite(base_url: str, api_key: str,
@@ -37,17 +42,17 @@ def build_suite(base_url: str, api_key: str,
         for e in positives + negatives:
             t0 = time.monotonic()
             try:
-                names = search_names(client, base_url, api_key, e["query"], e.get("country"))
+                results = search_names(client, base_url, api_key, e["query"], e.get("country"))
                 latencies.append((time.monotonic() - t0) * 1000)
             except Exception as exc:
                 errors += 1
                 state.setdefault("errors", []).append({"id": e["id"], "error": str(exc)})
                 state.setdefault("errored_ids", set()).add(e["id"])
-                names = []
+                results = []
             if e["kind"] == "positive":
-                pos_ranked[e["id"]] = (names, e)
+                pos_ranked[e["id"]] = (results, e)
             else:
-                neg_hits[e["id"]] = names
+                neg_hits[e["id"]] = results
         state.update(pos_ranked=pos_ranked, neg_hits=neg_hits, latencies=latencies)
         total = len(positives) + len(negatives)
         availability = 1.0 - (errors / total if total else 0.0)
@@ -57,19 +62,28 @@ def build_suite(base_url: str, api_key: str,
                            traces={"errors": state.get("errors", [])})
 
     def relevant_and_ranked(item):
-        names, e = item
-        rel = {n for n in names if e["expect_name"].lower() in n.lower()}
-        return names, rel, e
+        """A result is relevant iff its `id` matches the golden entry's
+        `expect_qid` (identity-based match on the stable Wikidata QID).
+        Falls back to name-substring matching only for entries that predate
+        the QID scheme and carry no `expect_qid`."""
+        results, e = item
+        ranked = [r["id"] if e.get("expect_qid") else r["full_name"] for r in results]
+        if e.get("expect_qid"):
+            rel = {e["expect_qid"]} & set(ranked)
+        else:
+            rel = {n for n in ranked if e["expect_name"].lower() in n.lower()}
+        return ranked, rel, e, results
 
     def stat_check(check_id, fn, threshold) -> Check:
         def run() -> CheckResult:
             vals, misses = [], []
             for item in state["pos_ranked"].values():
-                names, rel, e = relevant_and_ranked(item)
-                v = fn(names, rel)
+                ranked, rel, e, results = relevant_and_ranked(item)
+                v = fn(ranked, rel)
                 vals.append(v)
                 if v == 0.0:
-                    misses.append({"id": e["id"], "query": e["query"], "top": names[:5]})
+                    top = [f"{r.get('id')} {r['full_name']}" for r in results[:5]]
+                    misses.append({"id": e["id"], "query": e["query"], "top": top})
             score = sum(vals) / len(vals) if vals else 0.0
             return CheckResult(check_id=check_id, suite="africapep",
                                score_type="statistical", value=round(score, 4),
@@ -79,7 +93,7 @@ def build_suite(base_url: str, api_key: str,
     def negative_controls() -> CheckResult:
         errored_ids = state.get("errored_ids", set())
         errored = [e["id"] for e in negatives if e["id"] in errored_ids]
-        bad = {k: v[:3] for k, v in state["neg_hits"].items() if v}
+        bad = {k: [r["full_name"] for r in v[:3]] for k, v in state["neg_hits"].items() if v}
         clean = len(negatives) - len(bad) - len(errored)
         score = clean / len(negatives) if negatives else 0.0
         passed = not bad and not errored
