@@ -102,7 +102,15 @@ def main() -> int:
             if is_drift(r.value, base, higher_is_worse=r.check_id in LATENCY_CHECKS):
                 ledger.open_incident(run_id, r.suite, r.check_id, severity="regression",
                                      root_cause_hint=f"value {r.value} vs 7d baseline {round(base, 4)}")
-        ledger.finish_run(run_id, status="completed", judge_verified=True, judge_agreement=None)
+        judge_verified, judge_agreement = True, None
+        if any(r.score_type == "llm_judge" for r in results):
+            from nokware.judge import Judge
+            from nokware.meta_eval import run_meta_eval
+            meta_judge = Judge(api_key=os.environ.get("GEMINI_API_KEY"), budget=JudgeBudget(limit=40))
+            judge_agreement = run_meta_eval(meta_judge)
+            judge_verified = judge_agreement >= 0.85
+        ledger.finish_run(run_id, status="completed",
+                          judge_verified=judge_verified, judge_agreement=judge_agreement)
         os.makedirs("runs", exist_ok=True)
         write_summary(results, f"runs/{dt.date.today().isoformat()}.md")
     return 0 if all(r.passed for r in results) else 1
