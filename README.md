@@ -121,6 +121,9 @@ pip install -e ".[dev]"
 nokware run --suite africapep --dry-run
 ```
 
+`nokware run` must be invoked from the repo root: it reads `golden/*.jsonl` and
+`prompts/faithfulness.txt` via paths relative to the current working directory.
+
 This calls the live AfricaPEP API with its 108-entry golden set and prints each check's score,
 with no database write (`--dry-run`) and no API key needed (AfricaPEP's auth middleware is
 currently disabled in production). Swap `africapep` for `lexaura` or `sentinel`, or pass `--all`

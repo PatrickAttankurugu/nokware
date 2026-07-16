@@ -71,6 +71,4 @@ Dispatches the `nightly.yml` GitHub Actions workflow on `main` with input
 ## Repo constant
 
 The server dispatches against `PatrickAttankurugu/nokware` (the `REPO` constant in
-`nokware/mcp_server.py`). That GitHub repo does not exist yet as of this writing
-(Task 6 creates it) -- `trigger_run` will return an `error: 404 ...` string until then,
-which is the expected, non-crashing failure mode.
+`nokware/mcp_server.py`).
