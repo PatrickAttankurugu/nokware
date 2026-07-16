@@ -15,7 +15,12 @@ def _ledger() -> Ledger:
     # NEON_DATABASE_URL is read lazily, only when a tool is actually invoked, so the
     # server can be launched (and its tool list introspected) from any working
     # directory and without the env var set, per the CWD-safety amendment.
-    return Ledger(os.environ["NEON_DATABASE_URL"])
+    db_url = os.environ.get("NEON_DATABASE_URL")
+    if not db_url:
+        raise RuntimeError(
+            "NEON_DATABASE_URL is not set; configure it in the MCP client env (see docs/mcp.md)"
+        )
+    return Ledger(db_url)
 
 
 @mcp.tool()
@@ -72,11 +77,14 @@ def trigger_run_impl(suite: str) -> str:
     token = os.environ.get("GH_DISPATCH_TOKEN")
     if not token:
         return "error: GH_DISPATCH_TOKEN is not set; trigger_run requires it"
-    resp = httpx.post(
-        f"https://api.github.com/repos/{REPO}/actions/workflows/nightly.yml/dispatches",
-        headers={"Authorization": f"Bearer {token}",
-                 "Accept": "application/vnd.github+json"},
-        json={"ref": "main", "inputs": {"suite": suite}}, timeout=30)
+    try:
+        resp = httpx.post(
+            f"https://api.github.com/repos/{REPO}/actions/workflows/nightly.yml/dispatches",
+            headers={"Authorization": f"Bearer {token}",
+                     "Accept": "application/vnd.github+json"},
+            json={"ref": "main", "inputs": {"suite": suite}}, timeout=30)
+    except httpx.HTTPError as e:
+        return f"error: request failed: {type(e).__name__}"
     return "run dispatched" if resp.status_code == 204 else f"error: {resp.status_code} {resp.text}"
 
 

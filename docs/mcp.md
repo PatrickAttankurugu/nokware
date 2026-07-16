@@ -11,10 +11,12 @@ GitHub Actions workflow (`nightly.yml`) the nightly loop dispatches.
 - **`NEON_DATABASE_URL` is required** in the MCP client's env config for `get_scores`,
   `get_run_detail`, and `list_incidents` to work. It is read lazily (only when a tool
   is called), so the server still starts and lists its tools without it set; calls to
-  those three tools will fail if it is missing.
+  those three tools will fail with the error: "NEON_DATABASE_URL is not set; configure
+  it in the MCP client env (see docs/mcp.md)".
 - `trigger_run` additionally requires `GH_DISPATCH_TOKEN` (a GitHub token with
   `actions:write` on `PatrickAttankurugu/nokware`). Without it, the tool returns a
-  clear error string instead of raising.
+  clear error string instead of raising. Transport failures (connection errors, timeouts)
+  return error strings like "error: request failed: ConnectError".
 
 ## Setup (Claude Code)
 
