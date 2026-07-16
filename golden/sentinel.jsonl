@@ -1,0 +1,8 @@
+{"id": "structuring-01", "scenario": "structuring", "expected_typology": "structuring"}
+{"id": "layering-01", "scenario": "layering", "expected_typology": "layering"}
+{"id": "round_tripping-01", "scenario": "round_tripping", "expected_typology": "round_tripping"}
+{"id": "rapid_movement-01", "scenario": "rapid_movement", "expected_typology": "rapid_movement"}
+{"id": "pep_screening-01", "scenario": "pep_screening", "expected_typology": "pep_screening"}
+{"id": "high_risk_jurisdiction-01", "scenario": "high_risk_jurisdiction", "expected_typology": "high_risk_jurisdiction"}
+{"id": "unusual_volume-01", "scenario": "unusual_volume", "expected_typology": "unusual_volume"}
+{"id": "sanctions_match-01", "scenario": "sanctions_match", "expected_typology": "sanctions_match"}

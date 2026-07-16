@@ -34,10 +34,15 @@ def _build_lexaura() -> Suite:
                        Judge(api_key=os.environ.get("GEMINI_API_KEY"), budget=JudgeBudget(limit=160)))
 
 
+def _build_sentinel() -> Suite:
+    from suites.sentinel import build_suite
+    return build_suite(os.environ.get("SENTINEL_BASE_URL", "https://sentinel.patrickaiafrica.com"))
+
+
 SUITE_BUILDERS: dict[str, Callable[[], Suite]] = {
     "africapep": _build_africapep,
     "lexaura": _build_lexaura,
-    # "sentinel" registered in Task 12
+    "sentinel": _build_sentinel,
 }
 
 
