@@ -13,9 +13,9 @@ def no_sleep(monkeypatch):
     monkeypatch.setattr(time, "sleep", lambda *_args, **_kwargs: None)
 
 
-def fake_response(answer, snippets, titles, must_cite="s.4", include_full_text=False):
+def fake_response(answer, snippets, titles, must_cite="s.4", include_full_text=False, full_text_override=None):
     sources = []
-    for s, t in zip(snippets, titles):
+    for i, (s, t) in enumerate(zip(snippets, titles)):
         source = {
             "title": t,
             "body": "Some Regulatory Body",
@@ -27,7 +27,10 @@ def fake_response(answer, snippets, titles, must_cite="s.4", include_full_text=F
         }
         if include_full_text:
             # Simulate full context: golden quote in full_text but not in snippet
-            source["full_text"] = "This is the full regulatory text. " + s + " This is additional context after the snippet."
+            if full_text_override and isinstance(full_text_override, list) and i < len(full_text_override):
+                source["full_text"] = full_text_override[i]
+            else:
+                source["full_text"] = "This is the full regulatory text. " + s + " This is additional context after the snippet."
         sources.append(source)
     return {
         "answer": answer,
@@ -46,9 +49,10 @@ def test_lexaura_suite_scores(httpx_mock: HTTPXMock, tmp_path):
     )
     httpx_mock.add_response(json=fake_response(
         "The registration fee is 500 cedis (s.4).",
-        ["Applicants must pay a registration fee of 500 cedis."],
+        ["Applicants must pay a registration"],
         ["Registration Directive s.4"],
         include_full_text=True,
+        full_text_override=["Applicants must pay a registration fee of 500 cedis. This is additional regulatory context."],
     ))
     judge = Judge(api_key=None, budget=JudgeBudget(limit=10))
     suite = build_suite("https://lex.example.com", judge, golden_path=str(golden))
