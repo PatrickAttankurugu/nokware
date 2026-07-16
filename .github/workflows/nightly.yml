@@ -41,13 +41,23 @@ jobs:
           # the secret exists.
           if [ -z "$NEON_DATABASE_URL" ]; then
             echo "notice: no database configured; dry run only"
-            nokware run $SUITE_ARGS --dry-run
-            rc=$?
-            if [ $rc -gt 1 ]; then exit $rc; elif [ $rc -eq 1 ]; then echo "completed with findings"; fi
+            rc=0
+            nokware run $SUITE_ARGS --dry-run || rc=$?
+            if [ "$rc" -gt 1 ]; then
+              echo "run crashed with exit code $rc" >&2
+              exit "$rc"
+            elif [ "$rc" -eq 1 ]; then
+              echo "completed with findings"
+            fi
           else
-            nokware run $SUITE_ARGS
-            rc=$?
-            if [ $rc -gt 1 ]; then exit $rc; elif [ $rc -eq 1 ]; then echo "completed with findings"; fi
+            rc=0
+            nokware run $SUITE_ARGS || rc=$?
+            if [ "$rc" -gt 1 ]; then
+              echo "run crashed with exit code $rc" >&2
+              exit "$rc"
+            elif [ "$rc" -eq 1 ]; then
+              echo "completed with findings"
+            fi
           fi
         env:
           SUITE_INPUT: ${{ github.event.inputs.suite }}

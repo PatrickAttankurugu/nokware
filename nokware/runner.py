@@ -156,9 +156,13 @@ def main() -> int:
             ledger.finish_run(run_id, status="completed",
                               judge_verified=judge_verified, judge_agreement=judge_agreement)
         except Exception as e:
-            ledger.finish_run(run_id, status="failed", judge_verified=False, judge_agreement=None)
             print(f"error: run {run_id} failed after persisting results: "
                  f"{type(e).__name__}: {e}", file=sys.stderr)
+            try:
+                ledger.finish_run(run_id, status="failed", judge_verified=False, judge_agreement=None)
+            except Exception as inner:
+                print(f"additionally failed to mark run as failed: "
+                     f"{type(inner).__name__}: {inner}", file=sys.stderr)
             return 2
 
         try:
