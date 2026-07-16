@@ -15,6 +15,7 @@ export default function Error({
   error: Error & { digest?: string };
   reset: () => void;
 }) {
+  // reset is intentionally unused: missing NEON_DATABASE_URL is not a transient condition
   useEffect(() => {
     console.error(error);
   }, [error]);
