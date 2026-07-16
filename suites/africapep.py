@@ -42,6 +42,7 @@ def build_suite(base_url: str, api_key: str,
             except Exception as exc:
                 errors += 1
                 state.setdefault("errors", []).append({"id": e["id"], "error": str(exc)})
+                state.setdefault("errored_ids", set()).add(e["id"])
                 names = []
             if e["kind"] == "positive":
                 pos_ranked[e["id"]] = (names, e)
@@ -76,17 +77,23 @@ def build_suite(base_url: str, api_key: str,
         return Check(id=check_id, suite="africapep", description=check_id, fn=run)
 
     def negative_controls() -> CheckResult:
+        errored_ids = state.get("errored_ids", set())
+        errored = [e["id"] for e in negatives if e["id"] in errored_ids]
         bad = {k: v[:3] for k, v in state["neg_hits"].items() if v}
-        score = 1.0 - (len(bad) / len(negatives) if negatives else 0.0)
+        clean = len(negatives) - len(bad) - len(errored)
+        score = clean / len(negatives) if negatives else 0.0
+        passed = not bad and not errored
         return CheckResult(check_id="negative_controls", suite="africapep",
                            score_type="deterministic", value=round(score, 4),
-                           passed=not bad, traces={"false_positives": bad})
+                           passed=passed, traces={"false_positives": bad, "errored": errored})
 
     def latency() -> CheckResult:
         v = p95(state["latencies"])
+        passed = (v < 2000) and not state.get("errors") and bool(state["latencies"])
         return CheckResult(check_id="p95_latency_ms", suite="africapep",
                            score_type="deterministic", value=round(v, 1),
-                           passed=v < 2000, traces={"n": len(state["latencies"])})
+                           passed=passed, traces={"n": len(state["latencies"]),
+                                                  "errored_queries": len(state.get("errors", []))})
 
     return Suite(name="africapep", checks=[
         Check(id="availability", suite="africapep", description="gather + availability", fn=gather),
