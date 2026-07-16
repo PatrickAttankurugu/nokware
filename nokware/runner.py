@@ -102,6 +102,26 @@ def main() -> int:
             if is_drift(r.value, base, higher_is_worse=r.check_id in LATENCY_CHECKS):
                 ledger.open_incident(run_id, r.suite, r.check_id, severity="regression",
                                      root_cause_hint=f"value {r.value} vs 7d baseline {round(base, 4)}")
+
+        from nokware.embeddings import assign_cluster, embed_text, failure_signature
+        with ledger._conn() as conn:
+            failing = conn.execute(
+                "SELECT id, suite, check_id FROM results WHERE run_id = %s AND passed = false",
+                (run_id,),
+            ).fetchall()
+        for rid, suite, check_id in failing:
+            match = next((r for r in results if r.suite == suite and r.check_id == check_id), None)
+            if match:
+                emb = embed_text(failure_signature(match), os.environ.get("GEMINI_API_KEY"))
+                if emb:
+                    ledger.set_result_embedding(rid, emb)
+                    cluster = assign_cluster(ledger, rid, emb)
+                    with ledger._conn() as conn:
+                        conn.execute(
+                            """UPDATE incidents SET cluster_id = %s
+                               WHERE run_id = %s AND suite = %s AND check_id = %s""",
+                            (cluster, run_id, suite, check_id))
+
         judge_verified, judge_agreement = True, None
         if any(r.score_type == "llm_judge" for r in results):
             from nokware.judge import Judge
