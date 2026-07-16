@@ -1,0 +1,17 @@
+name: ci
+# Runs on push to any branch and on pull requests.
+# TEST_DATABASE_URL secret does not exist yet (Neon setup is deferred) so the
+# db-dependent tests in tests/test_db.py skip via their pytest.mark.skipif guard.
+# That is expected and not a failure; wire the secret up when Neon is ready.
+on: [push, pull_request]
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with: { python-version: "3.12" }
+      - run: pip install -e .[dev]
+      - run: pytest -v
+        env:
+          TEST_DATABASE_URL: ${{ secrets.TEST_DATABASE_URL }}

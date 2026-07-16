@@ -1,0 +1,58 @@
+name: nightly-evals
+on:
+  schedule:
+    # 08:30 GMT. Gemini free-tier daily quotas reset at midnight Pacific
+    # (08:00 GMT during PDT / 07:00 GMT during PST); running half an hour
+    # after reset gives the evaluated systems and the judge a fresh quota
+    # window instead of racing the reset or burning yesterday's quota.
+    - cron: "30 8 * * *"
+  workflow_dispatch:
+    inputs:
+      suite:
+        description: "suite name or 'all'"
+        default: "all"
+permissions:
+  contents: write
+jobs:
+  evals:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with: { python-version: "3.12" }
+      - run: pip install -e .
+      - name: Run suites
+        run: |
+          SUITE="${{ github.event.inputs.suite || 'all' }}"
+          if [ "$SUITE" = "all" ]; then
+            SUITE_ARGS="--all"
+          else
+            SUITE_ARGS="--suite $SUITE"
+          fi
+          # NEON_DATABASE_URL is not configured yet (Neon setup deferred).
+          # Degrade gracefully to a dry run instead of crashing on the
+          # missing connection string; switch to the persisted path once
+          # the secret exists.
+          if [ -z "$NEON_DATABASE_URL" ]; then
+            echo "notice: no database configured; dry run only"
+            nokware run $SUITE_ARGS --dry-run || echo "completed with findings"
+          else
+            nokware run $SUITE_ARGS || echo "completed with findings"
+          fi
+        env:
+          NOKWARE_TRIGGER: ${{ github.event_name }}
+          NEON_DATABASE_URL: ${{ secrets.NEON_DATABASE_URL }}
+          GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+          AFRICAPEP_API_KEY: ${{ secrets.AFRICAPEP_API_KEY }}
+          SENTINEL_BASE_URL: ${{ secrets.SENTINEL_BASE_URL }}
+          LEXAURA_BASE_URL: ${{ secrets.LEXAURA_BASE_URL }}
+      - name: Commit run summary
+        run: |
+          git config user.name "nokware-loop"
+          git config user.email "loop@patrickaiafrica.com"
+          # runs/ does not exist until the first persisted (non-dry-run) run
+          # writes to it; mkdir -p keeps "git add runs/" from failing on a
+          # dry run, so a run with no runs/ changes produces no commit.
+          mkdir -p runs
+          git add runs/ && git diff --cached --quiet || git commit -m "chore: nightly run summary"
+          git push
