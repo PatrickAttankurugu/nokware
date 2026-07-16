@@ -15,12 +15,14 @@ def test_no_key_uses_fallback():
     v = j.judge_faithfulness("the fee is 500 cedis", "registration fee: 500 cedis")
     assert v.engine == "fallback"
     assert 0.0 <= v.score <= 1.0
+    assert v.reasons == ["no_api_key"]
 
 
 def test_exhausted_budget_uses_fallback():
     j = Judge(api_key="real-key-not-called", budget=JudgeBudget(limit=0))
     v = j.judge_faithfulness("a", "a")
     assert v.engine == "fallback"
+    assert v.reasons == ["budget_exhausted"]
 
 
 def test_gemini_success_path():

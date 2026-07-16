@@ -118,8 +118,12 @@ export default function Methodology() {
           catch problems first. The harness&apos;s default cap is 200 judge calls per run; the
           LexAura suite currently runs at a tighter cap of 160, leaving headroom under the free
           tier&apos;s daily quota for the meta-eval below. Once a suite&apos;s budget is
-          exhausted, remaining judge checks are skipped and marked as such, never silently
-          dropped. The budget counts attempts, not successes: a call that reaches the model and
+          exhausted, remaining judge checks are rerouted to the deterministic keyword-overlap
+          fallback and marked with the reason (budget_exhausted), never silently dropped; a
+          missing GEMINI_API_KEY produces the same fallback with reason no_api_key instead. Both
+          reasons are tallied per run in each result&apos;s traces (fallback_reasons), alongside
+          the existing gemini/fallback engine tally, so a spend problem is visible in the public
+          traces, not just in a log line. The budget counts attempts, not successes: a call that reaches the model and
           returns an unusable response has still spent budget, because the cost was already
           incurred. The one exception is a query that already failed at the retrieval step:
           LexAura does not spend judge budget re-confirming a result it already knows is a forced

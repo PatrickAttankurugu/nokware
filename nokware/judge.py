@@ -34,15 +34,22 @@ class Judge:
         self.api_key = api_key
         self.budget = budget
 
-    def _fallback(self, answer: str, context: str) -> JudgeVerdict:
+    def _fallback(self, answer: str, context: str,
+                 reason: str = "keyword-overlap fallback") -> JudgeVerdict:
         score = keyword_overlap(answer, context)
         return JudgeVerdict(supported=score >= 0.5, score=round(score, 4),
-                            reasons=["keyword-overlap fallback"], engine="fallback")
+                            reasons=[reason], engine="fallback")
 
     def judge_faithfulness(self, answer: str, context: str) -> JudgeVerdict:
+        # The reason a call fell back to the deterministic engine is worth
+        # keeping distinct: "no_api_key" and "budget_exhausted" are both
+        # operational visibility signals (misconfiguration vs. spend), not the
+        # same generic "we used the fallback" reason a Gemini error produces.
+        if not self.api_key:
+            return self._fallback(answer, context, reason="no_api_key")
         # budget counts attempts, not successes: API cost is incurred per call attempt
-        if not self.api_key or not self.budget.take():
-            return self._fallback(answer, context)
+        if not self.budget.take():
+            return self._fallback(answer, context, reason="budget_exhausted")
         try:
             from google import genai
             client = genai.Client(api_key=self.api_key)

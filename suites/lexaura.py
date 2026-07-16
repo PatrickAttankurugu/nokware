@@ -95,6 +95,7 @@ def build_suite(base_url: str, judge: Judge,
         scores, unsupported = [], []
         errored_ids = set(state.get("errored_ids", []))
         engines = {"gemini": 0, "fallback": 0}
+        fallback_reasons: dict[str, int] = {}
         for qid, (payload, e) in state["answers"].items():
             if qid in errored_ids:
                 # already known to be a forced miss (the POST raised); don't spend
@@ -105,6 +106,9 @@ def build_suite(base_url: str, judge: Judge,
             verdict = judge.judge_faithfulness(payload.get("answer", ""), _context(payload))
             scores.append(verdict.score)
             engines[verdict.engine] = engines.get(verdict.engine, 0) + 1
+            if verdict.engine == "fallback" and verdict.reasons:
+                reason = verdict.reasons[0]
+                fallback_reasons[reason] = fallback_reasons.get(reason, 0) + 1
             if not verdict.supported:
                 unsupported.append({"id": qid, "reasons": verdict.reasons, "engine": verdict.engine})
         score = sum(scores) / len(scores) if scores else 0.0
@@ -112,7 +116,8 @@ def build_suite(base_url: str, judge: Judge,
                            score_type="llm_judge", value=round(score, 4),
                            passed=score >= 0.85, traces={"unsupported": unsupported,
                                                           "errored": sorted(errored_ids),
-                                                          "engines": engines})
+                                                          "engines": engines,
+                                                          "fallback_reasons": fallback_reasons})
 
     def latency() -> CheckResult:
         v = p95(state["latencies"])
