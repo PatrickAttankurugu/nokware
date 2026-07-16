@@ -68,16 +68,20 @@ class Ledger:
             ).fetchone()
             return row[0]
 
-    def write_results(self, run_id: int, results: list[CheckResult]) -> None:
+    def write_results(self, run_id: int,
+                      results: list[CheckResult]) -> dict[tuple[str, str], float | None]:
+        baselines: dict[tuple[str, str], float | None] = {}
         with self._conn() as conn:
             for r in results:
                 baseline = self._baseline_on(conn, r.suite, r.check_id)
+                baselines[(r.suite, r.check_id)] = baseline
                 conn.execute(
                     """INSERT INTO results (run_id, suite, check_id, score_type, value, passed, baseline, traces)
                        VALUES (%s,%s,%s,%s,%s,%s,%s,%s)""",
                     (run_id, r.suite, r.check_id, r.score_type, r.value, r.passed,
                      baseline, json.dumps(r.traces)),
                 )
+        return baselines
 
     def finish_run(self, run_id: int, status: str, judge_verified: bool,
                    judge_agreement: float | None) -> None:

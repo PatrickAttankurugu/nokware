@@ -21,10 +21,11 @@ def test_run_lifecycle_and_baseline():
     check_id = "precision_at_5"
     ledger = make_ledger()
     run_id = ledger.start_run(git_sha="abc123", golden_hash="g1", trigger="test")
-    ledger.write_results(run_id, [CheckResult(
+    baselines = ledger.write_results(run_id, [CheckResult(
         check_id=check_id, suite=suite, score_type="statistical",
         value=0.9, passed=True, traces={"n": 100},
     )])
+    assert baselines == {(suite, check_id): None}  # no prior rows yet, so no baseline
     ledger.finish_run(run_id, status="completed", judge_verified=True, judge_agreement=None)
 
     # Insert yesterday's result directly so we can prove today's row is excluded.

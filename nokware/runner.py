@@ -94,11 +94,11 @@ def main() -> int:
         ledger = Ledger(os.environ["NEON_DATABASE_URL"])
         run_id = ledger.start_run(git_sha(), golden_hash(),
                                   trigger=os.environ.get("NOKWARE_TRIGGER", "manual"))
-        ledger.write_results(run_id, results)
+        baselines = ledger.write_results(run_id, results)
         from nokware.drift import is_drift
         LATENCY_CHECKS = {"p95_latency_ms"}
         for r in results:
-            base = ledger.baseline(r.suite, r.check_id)
+            base = baselines.get((r.suite, r.check_id))
             if is_drift(r.value, base, higher_is_worse=r.check_id in LATENCY_CHECKS):
                 ledger.open_incident(run_id, r.suite, r.check_id, severity="regression",
                                      root_cause_hint=f"value {r.value} vs 7d baseline {round(base, 4)}")
