@@ -95,6 +95,13 @@ def main() -> int:
         run_id = ledger.start_run(git_sha(), golden_hash(),
                                   trigger=os.environ.get("NOKWARE_TRIGGER", "manual"))
         ledger.write_results(run_id, results)
+        from nokware.drift import is_drift
+        LATENCY_CHECKS = {"p95_latency_ms"}
+        for r in results:
+            base = ledger.baseline(r.suite, r.check_id)
+            if is_drift(r.value, base, higher_is_worse=r.check_id in LATENCY_CHECKS):
+                ledger.open_incident(run_id, r.suite, r.check_id, severity="regression",
+                                     root_cause_hint=f"value {r.value} vs 7d baseline {round(base, 4)}")
         ledger.finish_run(run_id, status="completed", judge_verified=True, judge_agreement=None)
         os.makedirs("runs", exist_ok=True)
         write_summary(results, f"runs/{dt.date.today().isoformat()}.md")
