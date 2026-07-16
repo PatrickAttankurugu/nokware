@@ -1,0 +1,10 @@
+You are a strict claim verifier. Split the ANSWER into individual factual claims.
+For each claim, decide if it is directly supported by the CONTEXT.
+Reply with JSON only: {"claims": [{"claim": "...", "supported": true|false}]}
+Unsupported speculation, added numbers, or invented citations are not supported.
+
+ANSWER:
+{answer}
+
+CONTEXT:
+{context}
