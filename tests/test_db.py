@@ -46,3 +46,21 @@ def test_open_incident():
     inc_id = ledger.open_incident(run_id, "africapep", "precision_at_5",
                                   severity="regression", root_cause_hint="drop vs baseline")
     assert inc_id > 0
+
+
+def test_has_open_incident():
+    ledger = make_ledger()
+    suite = f"testsuite_{uuid4().hex[:8]}"
+    check_id = "precision_at_5"
+    run_id = ledger.start_run(git_sha="abc123", golden_hash="g1", trigger="test")
+
+    assert ledger.has_open_incident(suite, check_id) is False
+
+    inc_id = ledger.open_incident(run_id, suite, check_id,
+                                  severity="regression", root_cause_hint="drop vs baseline")
+    assert ledger.has_open_incident(suite, check_id) is True
+
+    with ledger._conn() as conn:
+        conn.execute("UPDATE incidents SET state = 'resolved', resolved_at = now() WHERE id = %s",
+                     (inc_id,))
+    assert ledger.has_open_incident(suite, check_id) is False

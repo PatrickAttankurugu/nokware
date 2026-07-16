@@ -21,10 +21,18 @@ is a finding, not an excluded case.
   pages (`/`, `/runs`, `/incidents`, `/systems/[slug]`) reflect this honestly, rendering a
   "database not configured yet" message rather than crashing. The methodology page is fully
   static and needs no database.
-- Once Neon is provisioned, the loop switches to its persisted path automatically (the code
-  already branches on whether `NEON_DATABASE_URL` is set), the dashboard starts showing real
-  scores and trends, and drift detection and incidents go live. First real incidents are expected
-  within the first week of persisted runs.
+- Once the `NEON_DATABASE_URL` secret is set, the loop switches to its persisted path
+  automatically (the code already branches on whether the secret is non-empty): every run of the
+  workflow first calls `nokware init-db`, which applies the schema with `CREATE TABLE IF NOT
+  EXISTS` / `CREATE INDEX IF NOT EXISTS` statements, so it is safe to run on every nightly
+  invocation (idempotent, not a one-time migration someone has to remember to run by hand) before
+  `nokware run --all` persists results. The dashboard starts showing real scores and trends, and
+  drift detection and incidents go live. First real incidents are expected within the first week
+  of persisted runs.
+- The workflow's exit-code handling only tolerates a suite run that completed with findings
+  (exit code 1): anything higher (a persistence failure, a bad `--suite` argument, etc.) fails
+  the job instead of being swallowed, so a broken go-live path shows up as a red workflow run
+  instead of a silent no-op.
 - The AfricaPEP golden set matches on identity (stable Wikidata QID), not name substring, closing
   a false-positive gap where two different people sharing a name would both count as relevant.
 - CI is green on every push (`pytest -v`, no live network calls).

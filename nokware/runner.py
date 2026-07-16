@@ -108,44 +108,69 @@ def main() -> int:
         run_id = ledger.start_run(git_sha(), golden_hash(),
                                   trigger=os.environ.get("NOKWARE_TRIGGER", "manual"))
         baselines = ledger.write_results(run_id, results)
-        from nokware.drift import is_drift
-        LATENCY_CHECKS = {"p95_latency_ms"}
-        for r in results:
-            base = baselines.get((r.suite, r.check_id))
-            if is_drift(r.value, base, higher_is_worse=r.check_id in LATENCY_CHECKS):
-                ledger.open_incident(run_id, r.suite, r.check_id, severity="regression",
-                                     root_cause_hint=f"value {r.value} vs 7d baseline {round(base, 4)}")
 
-        from nokware.embeddings import assign_cluster, embed_text, failure_signature
-        with ledger._conn() as conn:
-            failing = conn.execute(
-                "SELECT id, suite, check_id FROM results WHERE run_id = %s AND passed = false",
-                (run_id,),
-            ).fetchall()
-        for rid, suite, check_id in failing:
-            match = next((r for r in results if r.suite == suite and r.check_id == check_id), None)
-            if match:
-                emb = embed_text(failure_signature(match), os.environ.get("GEMINI_API_KEY"))
-                if emb:
-                    ledger.set_result_embedding(rid, emb)
-                    cluster = assign_cluster(ledger, rid, emb)
-                    with ledger._conn() as conn:
-                        conn.execute(
-                            """UPDATE incidents SET cluster_id = %s
-                               WHERE run_id = %s AND suite = %s AND check_id = %s""",
-                            (cluster, run_id, suite, check_id))
+        # Everything below this point is best-effort enrichment (drift/incidents,
+        # embeddings/clustering, judge meta-eval) on top of results that are
+        # already durably written. If any of it blows up, the run must not be
+        # left stuck in the 'running' state forever: mark it failed, report the
+        # error, and exit 2 (distinct from the 0/1 pass/fail exit codes) so the
+        # workflow's exit-code handling treats this as a hard failure rather
+        # than "completed with findings".
+        try:
+            from nokware.drift import is_drift
+            LATENCY_CHECKS = {"p95_latency_ms"}
+            for r in results:
+                base = baselines.get((r.suite, r.check_id))
+                if is_drift(r.value, base, higher_is_worse=r.check_id in LATENCY_CHECKS):
+                    if not ledger.has_open_incident(r.suite, r.check_id):
+                        ledger.open_incident(
+                            run_id, r.suite, r.check_id, severity="regression",
+                            root_cause_hint=f"value {r.value} vs 7d baseline {round(base, 4)}")
 
-        judge_verified, judge_agreement = True, None
-        if any(r.score_type == "llm_judge" for r in results):
-            from nokware.judge import Judge
-            from nokware.meta_eval import run_meta_eval
-            meta_judge = Judge(api_key=os.environ.get("GEMINI_API_KEY"), budget=JudgeBudget(limit=40))
-            judge_agreement = run_meta_eval(meta_judge)
-            judge_verified = judge_agreement >= 0.85
-        ledger.finish_run(run_id, status="completed",
-                          judge_verified=judge_verified, judge_agreement=judge_agreement)
-        os.makedirs("runs", exist_ok=True)
-        write_summary(results, f"runs/{dt.date.today().isoformat()}.md")
+            from nokware.embeddings import assign_cluster, embed_text, failure_signature
+            with ledger._conn() as conn:
+                failing = conn.execute(
+                    "SELECT id, suite, check_id FROM results WHERE run_id = %s AND passed = false",
+                    (run_id,),
+                ).fetchall()
+            for rid, suite, check_id in failing:
+                match = next((r for r in results if r.suite == suite and r.check_id == check_id), None)
+                if match:
+                    emb = embed_text(failure_signature(match), os.environ.get("GEMINI_API_KEY"))
+                    if emb:
+                        ledger.set_result_embedding(rid, emb)
+                        cluster = assign_cluster(ledger, rid, emb)
+                        with ledger._conn() as conn:
+                            conn.execute(
+                                """UPDATE incidents SET cluster_id = %s
+                                   WHERE run_id = %s AND suite = %s AND check_id = %s""",
+                                (cluster, run_id, suite, check_id))
+
+            judge_verified, judge_agreement = True, None
+            if any(r.score_type == "llm_judge" for r in results):
+                from nokware.judge import Judge
+                from nokware.meta_eval import run_meta_eval
+                meta_judge = Judge(api_key=os.environ.get("GEMINI_API_KEY"), budget=JudgeBudget(limit=40))
+                judge_agreement = run_meta_eval(meta_judge)
+                judge_verified = judge_agreement >= 0.85
+            ledger.finish_run(run_id, status="completed",
+                              judge_verified=judge_verified, judge_agreement=judge_agreement)
+        except Exception as e:
+            ledger.finish_run(run_id, status="failed", judge_verified=False, judge_agreement=None)
+            print(f"error: run {run_id} failed after persisting results: "
+                 f"{type(e).__name__}: {e}", file=sys.stderr)
+            return 2
+
+        try:
+            os.makedirs("runs", exist_ok=True)
+            write_summary(results, f"runs/{dt.date.today().isoformat()}.md")
+        except Exception as e:
+            # The run row already finished successfully above; a summary-write
+            # failure here is a separate, lesser problem, but it still must not
+            # be swallowed silently.
+            print(f"error: run {run_id} completed but summary write failed: "
+                 f"{type(e).__name__}: {e}", file=sys.stderr)
+            return 2
     return 0 if all(r.passed for r in results) else 1
 
 

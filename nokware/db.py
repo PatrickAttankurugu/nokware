@@ -116,6 +116,22 @@ class Ledger:
             ).fetchone()
             return row[0]
 
+    def has_open_incident(self, suite: str, check_id: str) -> bool:
+        # An incident is still open while it is being triaged (investigating or
+        # explained) and has not been marked resolved. Used by the drift pass
+        # so one ongoing regression does not open a fresh duplicate incident
+        # every single night it keeps failing.
+        with self._conn() as conn:
+            row = conn.execute(
+                """SELECT 1 FROM incidents
+                   WHERE suite = %s AND check_id = %s
+                     AND state IN ('investigating', 'explained')
+                     AND resolved_at IS NULL
+                   LIMIT 1""",
+                (suite, check_id),
+            ).fetchone()
+            return row is not None
+
     def set_result_embedding(self, result_id: int, embedding: list[float]) -> None:
         with self._conn() as conn:
             conn.execute("UPDATE results SET embedding = %s::vector WHERE id = %s",

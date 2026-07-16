@@ -22,6 +22,11 @@ jobs:
       - uses: actions/setup-python@v5
         with: { python-version: "3.12" }
       - run: pip install -e .
+      - name: Initialize database schema
+        if: ${{ secrets.NEON_DATABASE_URL != '' }}
+        run: nokware init-db
+        env:
+          NEON_DATABASE_URL: ${{ secrets.NEON_DATABASE_URL }}
       - name: Run suites
         run: |
           SUITE="${SUITE_INPUT:-all}"
@@ -36,9 +41,13 @@ jobs:
           # the secret exists.
           if [ -z "$NEON_DATABASE_URL" ]; then
             echo "notice: no database configured; dry run only"
-            nokware run $SUITE_ARGS --dry-run || echo "completed with findings"
+            nokware run $SUITE_ARGS --dry-run
+            rc=$?
+            if [ $rc -gt 1 ]; then exit $rc; elif [ $rc -eq 1 ]; then echo "completed with findings"; fi
           else
-            nokware run $SUITE_ARGS || echo "completed with findings"
+            nokware run $SUITE_ARGS
+            rc=$?
+            if [ $rc -gt 1 ]; then exit $rc; elif [ $rc -eq 1 ]; then echo "completed with findings"; fi
           fi
         env:
           SUITE_INPUT: ${{ github.event.inputs.suite }}
