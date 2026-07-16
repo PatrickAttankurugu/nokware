@@ -6,8 +6,15 @@ import Link from "next/link";
 // database, at build time. It carries no `dynamic` export: there is nothing
 // here that a static prerender can get wrong, and no NEON_DATABASE_URL
 // dependency to defer past build time.
+//
+// The canonical prompt lives at repo root `prompts/faithfulness.txt` (what
+// nokware/judge.py actually sends). web/prompts/faithfulness.txt is a
+// synced copy: the Vercel CLI deploys web/ as a self-contained tree (see
+// README's deploy section), so a path outside it is invisible at build
+// time on Vercel even though it resolves fine in a full local checkout.
+// Keep the two files identical when the prompt changes.
 const faithfulnessPrompt = fs.readFileSync(
-  path.join(process.cwd(), "..", "prompts", "faithfulness.txt"),
+  path.join(process.cwd(), "prompts", "faithfulness.txt"),
   "utf8",
 );
 
