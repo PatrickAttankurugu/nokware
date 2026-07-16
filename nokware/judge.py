@@ -7,7 +7,7 @@ from pydantic import BaseModel
 
 from nokware.runner import JudgeBudget
 
-PROMPT = pathlib.Path("prompts/faithfulness.txt").read_text(encoding="utf8")
+PROMPT = (pathlib.Path(__file__).resolve().parent.parent / "prompts" / "faithfulness.txt").read_text(encoding="utf8")
 STOPWORDS = {"the", "a", "an", "is", "are", "of", "to", "and", "in", "for", "on"}
 
 
@@ -40,14 +40,16 @@ class Judge:
                             reasons=["keyword-overlap fallback"], engine="fallback")
 
     def judge_faithfulness(self, answer: str, context: str) -> JudgeVerdict:
+        # budget counts attempts, not successes: API cost is incurred per call attempt
         if not self.api_key or not self.budget.take():
             return self._fallback(answer, context)
         try:
             from google import genai
             client = genai.Client(api_key=self.api_key)
+            prompt = PROMPT.replace("{answer}", answer).replace("{context}", context)
             resp = client.models.generate_content(
                 model="gemini-2.5-flash",
-                contents=PROMPT.format(answer=answer, context=context),
+                contents=prompt,
             )
             payload = json.loads(re.search(r"\{.*\}", resp.text, re.S).group(0))
             claims = payload["claims"]
