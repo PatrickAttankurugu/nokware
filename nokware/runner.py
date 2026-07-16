@@ -27,9 +27,17 @@ def _build_africapep() -> Suite:
                        os.environ.get("AFRICAPEP_API_KEY", "unused"))
 
 
+def _build_lexaura() -> Suite:
+    from nokware.judge import Judge
+    from suites.lexaura import build_suite
+    return build_suite(os.environ.get("LEXAURA_BASE_URL", "https://lexaura.ramahupliftment.org"),
+                       Judge(api_key=os.environ.get("GEMINI_API_KEY"), budget=JudgeBudget(limit=160)))
+
+
 SUITE_BUILDERS: dict[str, Callable[[], Suite]] = {
     "africapep": _build_africapep,
-    # "lexaura" registered in Task 11, "sentinel" in Task 12
+    "lexaura": _build_lexaura,
+    # "sentinel" registered in Task 12
 }
 
 
